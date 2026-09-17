@@ -85,12 +85,16 @@
                 <div class="flex-grow-1 p-3 overflow-auto d-flex flex-column gap-2" id="chat-messages" style="background-color: #f8f9fa;">
                   {% if room.message_set.all %}
                     {% for msg in room.message_set.all %}
-                      <div class="d-flex flex-column {% if msg.user == request.user %}align-items-end{% else %}align-items-start{% endif %}">
-                        <div class="small text-muted mb-1 px-1">
-                          {% if msg.user == request.user %}You{% else %}{{ msg.user.username }}{% endif %}
+                      <div id="msg-container-{{ msg.id }}" class="d-flex flex-column {% if msg.user == request.user %}align-items-end{% else %}align-items-start{% endif %} message-item">
+                        <div class="small text-muted mb-1 px-1 d-flex align-items-center gap-1">
+                          <span>{% if msg.user == request.user %}You{% else %}{{ msg.user.username }}{% endif %}</span>
+                          {% if msg.user == request.user %}
+                            <button type="button" class="btn btn-link p-0 text-secondary text-decoration-none ms-1 opacity-75 hover-opacity-100" style="font-size: 0.75rem;" onclick="editMessage({{ msg.id }})" title="Edit message">✏️</button>
+                            <button type="button" class="btn btn-link p-0 text-danger text-decoration-none ms-1 opacity-75 hover-opacity-100" style="font-size: 0.75rem;" onclick="deleteMessage({{ msg.id }})" title="Delete message">🗑️</button>
+                          {% endif %}
                         </div>
-                        <div class="p-2 px-3 rounded-3 {% if msg.user == request.user %}bg-primary text-white{% else %}bg-white border text-dark{% endif %} shadow-sm" style="max-width: 85%;">
-                          {{ msg.content }}
+                        <div id="msg-bubble-{{ msg.id }}" class="msg-bubble p-2 px-3 rounded-3 {% if msg.user == request.user %}bg-primary text-white{% else %}bg-white border text-dark{% endif %} shadow-sm text-break" style="max-width: 85%;">
+                          <span id="msg-text-{{ msg.id }}">{{ msg.content }}</span>
                         </div>
                         <small class="text-muted px-1" style="font-size: 0.75rem;">{{ msg.created_at|date:"H:i" }}</small>
                       </div>
@@ -103,12 +107,56 @@
                   {% endif %}
                 </div>
 
-                <!-- Message Input Bar -->
+                <!-- Message Input Bar with Clean Emoji Dropdown -->
                 <div class="p-2 p-md-3 bg-white border-top">
                   <form id="chat-form" action="#" method="post" onsubmit="return false;">
-                    <div class="input-group">
-                      <input type="text" id="chat-message-input" class="form-control" placeholder="Type your message..." autocomplete="off" />
-                      <button class="btn btn-primary px-3 px-md-4" type="submit" id="chat-message-submit">
+                    <div class="input-group align-items-center bg-light rounded-3 p-1 border">
+                      <!-- Borderless Emoji Trigger Button -->
+                      <div class="dropdown">
+                        <button class="btn btn-link text-decoration-none fs-5 p-1 px-2 text-muted border-0 shadow-none" type="button" data-bs-toggle="dropdown" aria-expanded="false" title="Insert Emoji">
+                          😊
+                        </button>
+                        <div class="dropdown-menu p-2 shadow border-0" style="min-width: 290px; max-width: 320px;">
+                          <div class="text-muted small px-1 mb-2 fw-semibold">Quick Emojis</div>
+                          <div class="d-flex flex-wrap gap-1 fs-5 justify-content-start">
+                            <span role="button" class="p-1 rounded emoji-btn" onclick="insertEmoji('😀')">😀</span>
+                            <span role="button" class="p-1 rounded emoji-btn" onclick="insertEmoji('😂')">😂</span>
+                            <span role="button" class="p-1 rounded emoji-btn" onclick="insertEmoji('🤣')">🤣</span>
+                            <span role="button" class="p-1 rounded emoji-btn" onclick="insertEmoji('😍')">😍</span>
+                            <span role="button" class="p-1 rounded emoji-btn" onclick="insertEmoji('🥰')">🥰</span>
+                            <span role="button" class="p-1 rounded emoji-btn" onclick="insertEmoji('😎')">😎</span>
+                            <span role="button" class="p-1 rounded emoji-btn" onclick="insertEmoji('🥳')">🥳</span>
+                            <span role="button" class="p-1 rounded emoji-btn" onclick="insertEmoji('🤔')">🤔</span>
+                            <span role="button" class="p-1 rounded emoji-btn" onclick="insertEmoji('🥺')">🥺</span>
+                            <span role="button" class="p-1 rounded emoji-btn" onclick="insertEmoji('😭')">😭</span>
+                            <span role="button" class="p-1 rounded emoji-btn" onclick="insertEmoji('😱')">😱</span>
+                            <span role="button" class="p-1 rounded emoji-btn" onclick="insertEmoji('😴')">😴</span>
+                            <span role="button" class="p-1 rounded emoji-btn" onclick="insertEmoji('👍')">👍</span>
+                            <span role="button" class="p-1 rounded emoji-btn" onclick="insertEmoji('👎')">👎</span>
+                            <span role="button" class="p-1 rounded emoji-btn" onclick="insertEmoji('👏')">👏</span>
+                            <span role="button" class="p-1 rounded emoji-btn" onclick="insertEmoji('🙌')">🙌</span>
+                            <span role="button" class="p-1 rounded emoji-btn" onclick="insertEmoji('🤝')">🤝</span>
+                            <span role="button" class="p-1 rounded emoji-btn" onclick="insertEmoji('🙏')">🙏</span>
+                            <span role="button" class="p-1 rounded emoji-btn" onclick="insertEmoji('✌️')">✌️</span>
+                            <span role="button" class="p-1 rounded emoji-btn" onclick="insertEmoji('🔥')">🔥</span>
+                            <span role="button" class="p-1 rounded emoji-btn" onclick="insertEmoji('💯')">💯</span>
+                            <span role="button" class="p-1 rounded emoji-btn" onclick="insertEmoji('🎉')">🎉</span>
+                            <span role="button" class="p-1 rounded emoji-btn" onclick="insertEmoji('✨')">✨</span>
+                            <span role="button" class="p-1 rounded emoji-btn" onclick="insertEmoji('❤️')">❤️</span>
+                            <span role="button" class="p-1 rounded emoji-btn" onclick="insertEmoji('💖')">💖</span>
+                            <span role="button" class="p-1 rounded emoji-btn" onclick="insertEmoji('🚀')">🚀</span>
+                            <span role="button" class="p-1 rounded emoji-btn" onclick="insertEmoji('💡')">💡</span>
+                            <span role="button" class="p-1 rounded emoji-btn" onclick="insertEmoji('⭐')">⭐</span>
+                            <span role="button" class="p-1 rounded emoji-btn" onclick="insertEmoji('🍕')">🍕</span>
+                            <span role="button" class="p-1 rounded emoji-btn" onclick="insertEmoji('☕')">☕</span>
+                            <span role="button" class="p-1 rounded emoji-btn" onclick="insertEmoji('⚡')">⚡</span>
+                            <span role="button" class="p-1 rounded emoji-btn" onclick="insertEmoji('🏆')">🏆</span>
+                          </div>
+                        </div>
+                      </div>
+
+                      <input type="text" id="chat-message-input" class="form-control border-0 bg-transparent shadow-none" placeholder="Type your message..." autocomplete="off" />
+                      <button class="btn btn-primary px-3 px-md-4 rounded-3" type="submit" id="chat-message-submit">
                         Send
                       </button>
                     </div>
@@ -141,6 +189,31 @@
     const chatForm = document.getElementById("chat-form");
     const placeholder = document.getElementById("no-messages-placeholder");
 
+    // Emoji-only detector (Unicode Extended Pictographic & presentation)
+    function isOnlyEmojis(str) {
+      if (!str) return false;
+      const emojiRegex = /^(\p{Extended_Pictographic}|\p{Emoji_Presentation}|\p{Emoji_Modifier}|\p{Emoji_Component}|\s)+$/u;
+      return emojiRegex.test(str.trim());
+    }
+
+    function formatBubbleElement(bubble, text, isMe) {
+      if (isOnlyEmojis(text)) {
+        bubble.className = "msg-bubble text-break fs-1 p-0 bg-transparent border-0 shadow-none";
+      } else {
+        bubble.className = `msg-bubble p-2 px-3 rounded-3 shadow-sm text-break ${isMe ? 'bg-primary text-white' : 'bg-white border text-dark'}`;
+      }
+    }
+
+    // Check initially loaded messages on page load
+    document.querySelectorAll(".message-item").forEach(item => {
+      const bubble = item.querySelector(".msg-bubble");
+      const textSpan = item.querySelector("[id^='msg-text-']");
+      const isMe = item.classList.contains("align-items-end");
+      if (bubble && textSpan) {
+        formatBubbleElement(bubble, textSpan.textContent, isMe);
+      }
+    });
+
     // Scroll messages to bottom on initial load
     chatMessages.scrollTop = chatMessages.scrollHeight;
 
@@ -150,25 +223,58 @@
       `${wsScheme}://${window.location.host}/ws/chat/${roomSlug}/`
     );
 
-    // 2. Handle Incoming Messages
+    // 2. Handle Incoming Messages (create / edit / delete)
     chatSocket.onmessage = function(e) {
       const data = JSON.parse(e.data);
-      const isMe = data.username === currentUser;
 
-      if (placeholder) {
-        placeholder.remove();
-      }
+      if (data.action === "send") {
+        if (placeholder) {
+          placeholder.remove();
+        }
+        const isMe = data.username === currentUser;
+        const onlyEmoji = isOnlyEmojis(data.message);
+        const actionButtons = isMe ? `
+          <button type="button" class="btn btn-link p-0 text-secondary text-decoration-none ms-1 opacity-75 hover-opacity-100" style="font-size: 0.75rem;" onclick="editMessage(${data.id})" title="Edit message">✏️</button>
+          <button type="button" class="btn btn-link p-0 text-danger text-decoration-none ms-1 opacity-75 hover-opacity-100" style="font-size: 0.75rem;" onclick="deleteMessage(${data.id})" title="Delete message">🗑️</button>
+        ` : '';
 
-      const messageHtml = `
-        <div class="d-flex flex-column ${isMe ? 'align-items-end' : 'align-items-start'}">
-          <div class="small text-muted mb-1 px-1">${isMe ? 'You' : data.username}</div>
-          <div class="p-2 px-3 rounded-3 ${isMe ? 'bg-primary text-white' : 'bg-white border text-dark'} shadow-sm" style="max-width: 85%;">
-            ${data.message}
+        const bubbleClass = onlyEmoji
+          ? "msg-bubble text-break fs-1 p-0 bg-transparent border-0 shadow-none"
+          : `msg-bubble p-2 px-3 rounded-3 shadow-sm text-break ${isMe ? 'bg-primary text-white' : 'bg-white border text-dark'}`;
+
+        const messageHtml = `
+          <div id="msg-container-${data.id}" class="d-flex flex-column ${isMe ? 'align-items-end' : 'align-items-start'} message-item">
+            <div class="small text-muted mb-1 px-1 d-flex align-items-center gap-1">
+              <span>${isMe ? 'You' : data.username}</span>
+              ${actionButtons}
+            </div>
+            <div id="msg-bubble-${data.id}" class="${bubbleClass}" style="max-width: 85%;">
+              <span id="msg-text-${data.id}">${escapeHtml(data.message)}</span>
+            </div>
+            <small class="text-muted px-1" style="font-size: 0.75rem;">${data.created_at || ''}</small>
           </div>
-        </div>
-      `;
-      chatMessages.insertAdjacentHTML("beforeend", messageHtml);
-      chatMessages.scrollTop = chatMessages.scrollHeight;
+        `;
+        chatMessages.insertAdjacentHTML("beforeend", messageHtml);
+        chatMessages.scrollTop = chatMessages.scrollHeight;
+      } 
+      else if (data.action === "edit") {
+        const textSpan = document.getElementById(`msg-text-${data.id}`);
+        const bubble = document.getElementById(`msg-bubble-${data.id}`);
+        const container = document.getElementById(`msg-container-${data.id}`);
+        if (textSpan) {
+          textSpan.textContent = data.content;
+          if (bubble && container) {
+            const isMe = container.classList.contains("align-items-end");
+            formatBubbleElement(bubble, data.content, isMe);
+          }
+        }
+      } 
+      else if (data.action === "delete") {
+        const msgContainer = document.getElementById(`msg-container-${data.id}`);
+        if (msgContainer) {
+          msgContainer.remove();
+        }
+      }
     };
 
     // 3. Send Message on Form Submit
@@ -176,10 +282,48 @@
       e.preventDefault();
       const message = messageInput.value.trim();
       if (message && chatSocket.readyState === WebSocket.OPEN) {
-        chatSocket.send(JSON.stringify({ message: message }));
+        chatSocket.send(JSON.stringify({ action: "send", message: message }));
         messageInput.value = "";
       }
     };
+
+    // 4. Edit Message
+    function editMessage(msgId) {
+      const textSpan = document.getElementById(`msg-text-${msgId}`);
+      if (!textSpan) return;
+      const currentText = textSpan.textContent.trim();
+      const newText = prompt("Edit your message:", currentText);
+      if (newText !== null && newText.trim() !== "" && newText.trim() !== currentText) {
+        chatSocket.send(JSON.stringify({
+          action: "edit",
+          id: msgId,
+          content: newText.trim()
+        }));
+      }
+    }
+
+    // 5. Delete Message
+    function deleteMessage(msgId) {
+      if (confirm("Are you sure you want to delete this message?")) {
+        chatSocket.send(JSON.stringify({
+          action: "delete",
+          id: msgId
+        }));
+      }
+    }
+
+    // 6. Insert Emoji
+    function insertEmoji(emoji) {
+      messageInput.value += emoji;
+      messageInput.focus();
+    }
+
+    // Helper: Escape HTML in incoming websocket messages
+    function escapeHtml(text) {
+      const div = document.createElement("div");
+      div.textContent = text;
+      return div.innerHTML;
+    }
   </script>
 {% endif %}
 
