@@ -1,0 +1,187 @@
+{% extends 'base.html' %}
+{% block title %}
+  Chat - {% if room %}{{ room.name }}{% else %}Rooms{% endif %}
+{% endblock %}
+
+{% block content %}
+  <div class="container-fluid container-md py-2 py-md-4">
+    <div class="row justify-content-center">
+      <div class="col-12 col-lg-11">
+        
+        <div class="card shadow-sm border-0 overflow-hidden" style="height: calc(100dvh - 100px); min-height: 480px;">
+          <div class="row g-0 h-100">
+            
+            <!-- Desktop Sidebar: Room List (Hidden on Mobile) -->
+            <div class="d-none d-md-flex col-md-4 col-lg-3 border-end bg-white flex-column h-100">
+              <div class="p-3 border-bottom bg-light">
+                <h6 class="fw-bold mb-0 text-dark">Chat Rooms</h6>
+              </div>
+              
+              <div class="overflow-auto flex-grow-1">
+                {% if rooms %}
+                  <div class="list-group list-group-flush">
+                    {% for r in rooms %}
+                      <a href="{% url 'chat' %}?slug={{ r.slug }}" 
+                         class="list-group-item list-group-item-action d-flex justify-content-between align-items-center py-3 px-3 {% if room and room.id == r.id %}active{% endif %}">
+                        <span class="fw-medium text-truncate">{{ r.name }}</span>
+                        <span class="badge {% if room and room.id == r.id %}bg-light text-primary{% else %}bg-secondary-subtle text-secondary{% endif %} rounded-pill ms-2">#{{ r.slug }}</span>
+                      </a>
+                    {% endfor %}
+                  </div>
+                {% else %}
+                  <div class="p-3 text-muted text-center small">
+                    No rooms available.
+                  </div>
+                {% endif %}
+              </div>
+            </div>
+
+            <!-- Mobile Offcanvas: Room List Drawer -->
+            <div class="offcanvas offcanvas-start d-md-none" tabindex="-1" id="mobileRoomsDrawer" aria-labelledby="mobileRoomsDrawerLabel">
+              <div class="offcanvas-header bg-light border-bottom">
+                <h6 class="offcanvas-title fw-bold" id="mobileRoomsDrawerLabel">Chat Rooms</h6>
+                <button type="button" class="btn-close" data-bs-dismiss="offcanvas" aria-label="Close"></button>
+              </div>
+              <div class="offcanvas-body p-0">
+                {% if rooms %}
+                  <div class="list-group list-group-flush">
+                    {% for r in rooms %}
+                      <a href="{% url 'chat' %}?slug={{ r.slug }}" 
+                         class="list-group-item list-group-item-action d-flex justify-content-between align-items-center py-3 px-3 {% if room and room.id == r.id %}active{% endif %}">
+                        <span class="fw-medium text-truncate">{{ r.name }}</span>
+                        <span class="badge {% if room and room.id == r.id %}bg-light text-primary{% else %}bg-secondary-subtle text-secondary{% endif %} rounded-pill ms-2">#{{ r.slug }}</span>
+                      </a>
+                    {% endfor %}
+                  </div>
+                {% else %}
+                  <div class="p-3 text-muted text-center small">
+                    No rooms available.
+                  </div>
+                {% endif %}
+              </div>
+            </div>
+
+            <!-- Main Chat Area: Header, Conversation & Input -->
+            <div class="col-12 col-md-8 col-lg-9 d-flex flex-column h-100 bg-light">
+              {% if room %}
+                <!-- Chat Header -->
+                <div class="p-2 p-md-3 bg-white border-bottom d-flex justify-content-between align-items-center">
+                  <div class="d-flex align-items-center gap-2">
+                    <!-- Mobile Rooms Drawer Toggle Button -->
+                    <button class="btn btn-outline-secondary btn-sm d-md-none" type="button" data-bs-toggle="offcanvas" data-bs-target="#mobileRoomsDrawer" aria-controls="mobileRoomsDrawer">
+                      ☰ Rooms
+                    </button>
+                    <div>
+                      <h6 class="fw-bold mb-0 text-dark">{{ room.name }}</h6>
+                      <small class="text-muted">#{{ room.slug }}</small>
+                    </div>
+                  </div>
+                  <span class="badge bg-success-subtle text-success border border-success-subtle px-2 py-1">
+                    ● Active
+                  </span>
+                </div>
+
+                <!-- Messages Container -->
+                <div class="flex-grow-1 p-3 overflow-auto d-flex flex-column gap-2" id="chat-messages" style="background-color: #f8f9fa;">
+                  {% if room.message_set.all %}
+                    {% for msg in room.message_set.all %}
+                      <div class="d-flex flex-column {% if msg.user == request.user %}align-items-end{% else %}align-items-start{% endif %}">
+                        <div class="small text-muted mb-1 px-1">
+                          {% if msg.user == request.user %}You{% else %}{{ msg.user.username }}{% endif %}
+                        </div>
+                        <div class="p-2 px-3 rounded-3 {% if msg.user == request.user %}bg-primary text-white{% else %}bg-white border text-dark{% endif %} shadow-sm" style="max-width: 85%;">
+                          {{ msg.content }}
+                        </div>
+                        <small class="text-muted px-1" style="font-size: 0.75rem;">{{ msg.created_at|date:"H:i" }}</small>
+                      </div>
+                    {% endfor %}
+                  {% else %}
+                    <div class="text-center text-muted my-auto" id="no-messages-placeholder">
+                      <p class="mb-1">No messages yet.</p>
+                      <small>Be the first to say hi!</small>
+                    </div>
+                  {% endif %}
+                </div>
+
+                <!-- Message Input Bar -->
+                <div class="p-2 p-md-3 bg-white border-top">
+                  <form id="chat-form" action="#" method="post" onsubmit="return false;">
+                    <div class="input-group">
+                      <input type="text" id="chat-message-input" class="form-control" placeholder="Type your message..." autocomplete="off" />
+                      <button class="btn btn-primary px-3 px-md-4" type="submit" id="chat-message-submit">
+                        Send
+                      </button>
+                    </div>
+                  </form>
+                </div>
+
+              {% else %}
+                <div class="h-100 d-flex flex-column align-items-center justify-content-center text-muted p-3">
+                  <p class="mb-3">Please select a room to start chatting.</p>
+                  <button class="btn btn-outline-primary btn-sm d-md-none" type="button" data-bs-toggle="offcanvas" data-bs-target="#mobileRoomsDrawer">
+                    View Rooms
+                  </button>
+                </div>
+              {% endif %}
+            </div>
+
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </div>
+
+{% if room %}
+  <script>
+    const roomSlug = "{{ room.slug }}";
+    const currentUser = "{{ request.user.username }}";
+    const chatMessages = document.getElementById("chat-messages");
+    const messageInput = document.getElementById("chat-message-input");
+    const chatForm = document.getElementById("chat-form");
+    const placeholder = document.getElementById("no-messages-placeholder");
+
+    // Scroll messages to bottom on initial load
+    chatMessages.scrollTop = chatMessages.scrollHeight;
+
+    // 1. Establish WebSocket Connection
+    const wsScheme = window.location.protocol === "https:" ? "wss" : "ws";
+    const chatSocket = new WebSocket(
+      `${wsScheme}://${window.location.host}/ws/chat/${roomSlug}/`
+    );
+
+    // 2. Handle Incoming Messages
+    chatSocket.onmessage = function(e) {
+      const data = JSON.parse(e.data);
+      const isMe = data.username === currentUser;
+
+      if (placeholder) {
+        placeholder.remove();
+      }
+
+      const messageHtml = `
+        <div class="d-flex flex-column ${isMe ? 'align-items-end' : 'align-items-start'}">
+          <div class="small text-muted mb-1 px-1">${isMe ? 'You' : data.username}</div>
+          <div class="p-2 px-3 rounded-3 ${isMe ? 'bg-primary text-white' : 'bg-white border text-dark'} shadow-sm" style="max-width: 85%;">
+            ${data.message}
+          </div>
+        </div>
+      `;
+      chatMessages.insertAdjacentHTML("beforeend", messageHtml);
+      chatMessages.scrollTop = chatMessages.scrollHeight;
+    };
+
+    // 3. Send Message on Form Submit
+    chatForm.onsubmit = function(e) {
+      e.preventDefault();
+      const message = messageInput.value.trim();
+      if (message && chatSocket.readyState === WebSocket.OPEN) {
+        chatSocket.send(JSON.stringify({ message: message }));
+        messageInput.value = "";
+      }
+    };
+  </script>
+{% endif %}
+
+{% endblock %}
+

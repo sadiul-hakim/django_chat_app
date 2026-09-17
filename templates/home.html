@@ -1,0 +1,68 @@
+{% extends 'base.html' %}
+{% block title %}
+  Home Page - Chat App
+{% endblock %}
+
+{% block content %}
+  <div class="container py-5">
+    <div class="row justify-content-center">
+      <div class="col-12 col-lg-8">
+        
+        <!-- Welcome Hero Section -->
+        <div class="card shadow-sm border-0 mb-4">
+          <div class="card-body p-4 p-md-5">
+            <h1 class="display-6 fw-bold text-dark mb-3">
+              {% if user.is_authenticated %}
+                Welcome back, {{ user.username }}!
+              {% else %}
+                Welcome to Chat App
+              {% endif %}
+            </h1>
+            <p class="lead text-secondary mb-4">
+              A real-time messaging application built with Django and WebSockets. Connect and chat instantly.
+            </p>
+
+            <div class="d-flex gap-2 flex-wrap">
+              {% if user.is_authenticated %}
+                <a class="btn btn-primary px-4 py-2" href="{% url 'chat' %}">
+                  Go to Chat Room
+                </a>
+              {% else %}
+                <a class="btn btn-primary px-4 py-2" href="{% url 'login' %}">
+                  Sign In
+                </a>
+                <a class="btn btn-outline-secondary px-4 py-2" href="{% url 'register' %}">
+                  Create Account
+                </a>
+              {% endif %}
+            </div>
+          </div>
+        </div>
+
+        <!-- Simple Feature Highlights -->
+        <div class="row g-3">
+          <div class="col-md-4">
+            <div class="card h-100 border-0 bg-white shadow-sm p-3">
+              <h6 class="fw-bold text-dark mb-2">Real-Time</h6>
+              <p class="text-muted small mb-0">Instant message delivery powered by Django Channels.</p>
+            </div>
+          </div>
+          <div class="col-md-4">
+            <div class="card h-100 border-0 bg-white shadow-sm p-3">
+              <h6 class="fw-bold text-dark mb-2">Secure</h6>
+              <p class="text-muted small mb-0">Protected authentication with Django session & auth guards.</p>
+            </div>
+          </div>
+          <div class="col-md-4">
+            <div class="card h-100 border-0 bg-white shadow-sm p-3">
+              <h6 class="fw-bold text-dark mb-2">Clean UI</h6>
+              <p class="text-muted small mb-0">Responsive, minimal layout designed for effortless chatting.</p>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </div>
+{% endblock %}
+

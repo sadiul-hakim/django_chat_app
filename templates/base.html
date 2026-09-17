@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>
+      {% block title %}
+
+      {% endblock %}
+    </title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css" rel="stylesheet" />
+  </head>
+  <body class="bg-light">
+    <nav class="navbar navbar-expand-lg navbar-dark bg-dark sticky-top shadow-sm py-2">
+      <div class="container">
+        <!-- Brand Logo -->
+        <a class="navbar-brand fw-bold d-flex align-items-center gap-2" href="{% url 'home' %}">
+          <span class="d-inline-flex align-items-center justify-content-center bg-primary text-white rounded-3 px-2 py-1" style="font-size: 0.9rem;">
+            💬
+          </span>
+          <span>Chat App</span>
+        </a>
+
+        <button class="navbar-toggler border-0" type="button" data-bs-toggle="collapse" data-bs-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+          <span class="navbar-toggler-icon"></span>
+        </button>
+
+        <div class="collapse navbar-collapse" id="navbarSupportedContent">
+          <!-- Left / Center Links -->
+          <ul class="navbar-nav me-auto mb-2 mb-lg-0 ms-lg-3">
+            <li class="nav-item">
+              <a class="nav-link px-2" href="{% url 'home' %}">Home</a>
+            </li>
+            {% if user.is_authenticated %}
+              <li class="nav-item">
+                <a class="nav-link px-2" href="{% url 'chat' %}">Chat Rooms</a>
+              </li>
+            {% endif %}
+          </ul>
+
+          <!-- Right Action Area -->
+          <div class="d-flex align-items-center gap-2 flex-wrap">
+            {% if user.is_authenticated %}
+              <!-- User Profile Badge -->
+              <span class="badge bg-secondary-subtle text-white-50 border border-secondary px-3 py-2 rounded-pill d-flex align-items-center gap-1">
+                <span class="text-white fw-semibold">{{ user.username }}</span>
+              </span>
+
+              <!-- Logout Button Form -->
+              <form action="{% url 'logout' %}" method="post" class="d-inline m-0">
+                {% csrf_token %}
+                <button type="submit" class="btn btn-outline-danger btn-sm rounded-pill px-3">
+                  Log Out
+                </button>
+              </form>
+            {% else %}
+              <a class="btn btn-outline-light btn-sm rounded-pill px-3" href="{% url 'login' %}">
+                Log In
+              </a>
+              <a class="btn btn-primary btn-sm rounded-pill px-3" href="{% url 'register' %}">
+                Sign Up
+              </a>
+            {% endif %}
+          </div>
+        </div>
+      </div>
+    </nav>
+    {% block content %}
+
+    {% endblock %}
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/js/bootstrap.bundle.min.js"></script>
+  </body>
+</html>
